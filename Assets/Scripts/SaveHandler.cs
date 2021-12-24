@@ -12,12 +12,13 @@ using System.Security.Cryptography;
 using UnityEngine;
 using Newtonsoft.Json;
 using System.Text;
+using Newtonsoft.Json.Linq;
 
 static public class SaveHandler
 {
     static private string FilePath = Application.persistentDataPath + @"/UnitySandboxSave.dat";
     static private string AesKey = "FeelFreeToModifyTheSaveAndCheat!";
-    static public Dictionary<string, dynamic> Data = new Dictionary<string, dynamic>();
+    static public JObject Data = new JObject();
 
     /*
      * Description: Save the data into into a save file
@@ -38,13 +39,14 @@ static public class SaveHandler
                     AesAlg.Key = Encoding.UTF8.GetBytes(AesKey);
                     AesAlg.Mode = CipherMode.CBC;
                     ICryptoTransform encryptor = AesAlg.CreateEncryptor();
-                    string SaveJson = JsonConvert.SerializeObject(Data, Formatting.None);
                     SaveFile.Write(AesAlg.IV, 0, AesAlg.IV.Length);
                     using (CryptoStream EncryptStream = new CryptoStream(SaveFile, encryptor, CryptoStreamMode.Write))
                     {
                         using (StreamWriter PlainTextSave = new StreamWriter(EncryptStream))
                         {
-                            PlainTextSave.Write(SaveJson);
+                            JObject OrganizedSave = (JObject)Data.DeepClone();
+                            PrepareSerialize(OrganizedSave);
+                            PlainTextSave.Write(OrganizedSave.ToString());
                         }
                     }
                 }
@@ -85,7 +87,8 @@ static public class SaveHandler
                             {
                                 JsonString += PlainTextLoad.ReadLine();
                             }
-                            Data = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(JsonString);
+                            Data = JObject.Parse(JsonString);
+                            PrepareDeserialize(Data);
                         }
                     }
                 }
@@ -96,6 +99,125 @@ static public class SaveHandler
             return false;
         }
         return true;
+    }
+    /*
+     * Description: Prepare the object for disk saving
+     */
+    static private void PrepareSerialize(JObject dict)
+    {
+        foreach (KeyValuePair<string, JToken> item in dict)
+        {
+            switch(item.Value.Type)
+            {
+                case JTokenType.Bytes:
+                    {
+                        dict[item.Key] = new JObject();
+                        dict[item.Key]["RealType"] = "base64";
+                        dict[item.Key]["Value"] = Convert.ToBase64String((byte[])item.Value);
+                        break;
+                    }
+                case JTokenType.Object:
+                    {
+                        PrepareSerialize((JObject)item.Value);
+                        break;
+                    }
+                case JTokenType.Array:
+                    {
+                        PrepareSerialize((JArray)item.Value);
+                        break;
+                    }
+            }
+        }
+    }
+    static private void PrepareSerialize(JArray arr)
+    {
+        
+        for (int i = 0; i < arr.Count; i++)
+        {
+            JToken item = arr[i];
+            switch (item.Type)
+            {
+                case JTokenType.Bytes:
+                    {
+                        arr[i] = new JObject();
+                        arr[i]["RealType"] = "base64";
+                        arr[i]["Value"] = Convert.ToBase64String((byte[])item);
+                        break;
+                    }
+                case JTokenType.Object:
+                    {
+                        PrepareSerialize((JObject)item);
+                        break;
+                    }
+                case JTokenType.Array:
+                    {
+                        PrepareSerialize((JArray)item);
+                        break;
+                    }
+            }
+        }
+    }
+    /*
+     * Description: Prepare Object for use
+     */
+    static private void PrepareDeserialize(JObject dict)
+    {
+        foreach (KeyValuePair<string, JToken> item in dict)
+        {
+            switch (item.Value.Type)
+            {
+                case JTokenType.Object:
+                    {
+                        JObject Obj = (JObject)item.Value;
+
+                        if(Obj.TryGetValue("RealType",out JToken data))
+                        {
+                            if((string)data == "base64")
+                            {
+                                dict[item.Key] = Convert.FromBase64String((string)Obj["Value"]);
+                            }
+                            break;
+                        }
+                        PrepareDeserialize((JObject)Obj);
+                        break;
+                    }
+                case JTokenType.Array:
+                    {
+                        PrepareDeserialize((JArray)item.Value);
+                        break;
+                    }
+            }
+        }
+    }
+    static private void PrepareDeserialize(JArray arr)
+    {
+        for (int i = 0; i < arr.Count; i++)
+        {
+            JToken item = arr[i];
+            switch (item.Type)
+            {
+                case JTokenType.Object:
+                    {
+                        JObject Obj = (JObject)item;
+
+                        if (Obj.TryGetValue("RealType", out JToken data))
+                        {
+                            if ((string)data == "base64")
+                            {
+                                arr[i] = Convert.FromBase64String((string)Obj["Value"]);
+                            }
+                            break;
+                        }
+                        PrepareDeserialize((JObject)Obj);
+                        break;
+                    }
+                case JTokenType.Array:
+                    {
+                        PrepareDeserialize((JArray)item);
+                        break;
+                    }
+            }
+        }
     }
     static public bool SaveFileExist()
     {
