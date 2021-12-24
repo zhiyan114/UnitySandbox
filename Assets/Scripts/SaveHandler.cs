@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using UnityEngine;
-using Newtonsoft.Json;
 using System.Text;
 using Newtonsoft.Json.Linq;
 
@@ -45,7 +44,7 @@ static public class SaveHandler
                         using (StreamWriter PlainTextSave = new StreamWriter(EncryptStream))
                         {
                             JObject OrganizedSave = (JObject)Data.DeepClone();
-                            PrepareSerialize(OrganizedSave);
+                            PrepareSerialize(OrganizedSave,"");
                             PlainTextSave.Write(OrganizedSave.ToString());
                         }
                     }
@@ -88,7 +87,7 @@ static public class SaveHandler
                                 JsonString += PlainTextLoad.ReadLine();
                             }
                             Data = JObject.Parse(JsonString);
-                            PrepareDeserialize(Data.Properties());
+                            PrepareDeserialize(Data,"");
                         }
                     }
                 }
@@ -103,117 +102,101 @@ static public class SaveHandler
     /*
      * Description: Prepare the object for disk saving
      */
-    static private void PrepareSerialize(IEnumerable<JProperty> dict)
+    static private void PrepareSerialize(JObject dict,string QueryVal="")
     {
-        foreach (JProperty item in dict)
+        foreach (KeyValuePair<string, JToken> item in (QueryVal != "") ? (JObject)dict.SelectToken(QueryVal.Substring(0,QueryVal.Length-1)) : dict)
         {
             switch(item.Value.Type)
             {
                 case JTokenType.Bytes:
                     {
-                        item.Value = new JObject();
-                        item.Value["RealType"] = "base64";
-                        item.Value["Value"] = Convert.ToBase64String((byte[])item.Value);
+                        item.Value.Replace("base64:" + Convert.ToBase64String((byte[])item.Value));
                         break;
                     }
                 case JTokenType.Object:
                     {
-                        PrepareSerialize((item.Value as JObject).Properties());
+                        PrepareSerialize(dict, QueryVal+item.Key+".");
                         break;
                     }
                 case JTokenType.Array:
                     {
-                        PrepareSerialize((JArray)item.Value);
+                        PrepareSerialize(dict, QueryVal + item.Key,true);
                         break;
                     }
             }
         }
     }
-    static private void PrepareSerialize(JArray arr)
+    static private void PrepareSerialize(JObject dict, string QueryVal = "", bool isArray=true)
     {
-        
-        for (int i = 0; i < arr.Count; i++)
+        for (int i=0; i<(dict.SelectToken(QueryVal) as JArray).Count; i++)
         {
-            JToken item = arr[i];
+            JToken item = dict.SelectToken(QueryVal + "["+i+"]");
             switch (item.Type)
             {
                 case JTokenType.Bytes:
                     {
-                        arr[i] = new JObject();
-                        arr[i]["RealType"] = "base64";
-                        arr[i]["Value"] = Convert.ToBase64String((byte[])item);
+                        item.Replace("base64:" + Convert.ToBase64String((byte[])item));
                         break;
                     }
                 case JTokenType.Object:
                     {
-                        PrepareSerialize((item as JObject).Properties());
+                        PrepareSerialize(dict, QueryVal + "[" + i + "]" + ".");
                         break;
                     }
                 case JTokenType.Array:
                     {
-                        PrepareSerialize((JArray)item);
+                        PrepareSerialize(dict, QueryVal + "[" + i + "]", true);
                         break;
                     }
             }
         }
     }
+
     /*
      * Description: Prepare Object for use
      */
-    static private void PrepareDeserialize(JObject dict)
+    static private void PrepareDeserialize(JObject dict, string QueryVal = "")
     {
-        foreach (KeyValuePair<string, JToken> item in dict)
+        foreach (KeyValuePair<string, JToken> item in (QueryVal != "") ? (JObject)dict.SelectToken(QueryVal.Substring(0, QueryVal.Length - 1)) : dict)
         {
+            if(item.Value.Type == JTokenType.String && item.Value.ToString().StartsWith("base64:"))
+            {
+                dict.SelectToken(QueryVal + item.Key).Replace(Convert.FromBase64String(item.Value.ToString().Substring(7)));
+            }
             switch (item.Value.Type)
             {
                 case JTokenType.Object:
                     {
-                        JObject Obj = (JObject)item.Value;
-
-                        if(Obj.TryGetValue("RealType",out JToken data))
-                        {
-                            if((string)data == "base64")
-                            {
-                                dict[item.Key] = Convert.FromBase64String((string)Obj["Value"]);
-                            }
-                            break;
-                        }
-                        PrepareDeserialize((JObject)Obj);
+                        PrepareDeserialize(dict, QueryVal+item.Key + ".");
                         break;
                     }
                 case JTokenType.Array:
                     {
-                        PrepareDeserialize((JArray)item.Value);
+                        PrepareDeserialize(dict, QueryVal + item.Key, true);
                         break;
                     }
             }
         }
     }
-    static private void PrepareDeserialize(JArray arr)
+    static private void PrepareDeserialize(JObject dict, string QueryVal = "", bool isArray = true)
     {
-        for (int i = 0; i < arr.Count; i++)
+        for (int i = 0; i < (dict.SelectToken(QueryVal) as JArray).Count; i++)
         {
-            JToken item = arr[i];
+            JToken item = dict.SelectToken(QueryVal + "[" + i + "]");
+            if (item.Type == JTokenType.String && item.ToString().StartsWith("base64:"))
+            {
+                item.Replace(Convert.FromBase64String(item.ToString().Substring(7)));
+            }
             switch (item.Type)
             {
                 case JTokenType.Object:
                     {
-                        JObject Obj = (JObject)item;
-
-                        if (Obj.TryGetValue("RealType", out JToken data))
-                        {
-                            if ((string)data == "base64")
-                            {
-                                arr[i] = Convert.FromBase64String((string)Obj["Value"]);
-                            }
-                            break;
-                        }
-                        PrepareDeserialize((JObject)Obj);
+                        PrepareDeserialize(dict, QueryVal + "[" + i + "]" + ".");
                         break;
                     }
                 case JTokenType.Array:
                     {
-                        PrepareDeserialize((JArray)item);
+                        PrepareDeserialize(dict, QueryVal + "[" + i + "]", true);
                         break;
                     }
             }
