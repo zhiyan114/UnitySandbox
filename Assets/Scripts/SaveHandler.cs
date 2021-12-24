@@ -88,7 +88,7 @@ static public class SaveHandler
                                 JsonString += PlainTextLoad.ReadLine();
                             }
                             Data = JObject.Parse(JsonString);
-                            PrepareDeserialize(Data);
+                            PrepareDeserialize(Data.Properties());
                         }
                     }
                 }
@@ -103,22 +103,22 @@ static public class SaveHandler
     /*
      * Description: Prepare the object for disk saving
      */
-    static private void PrepareSerialize(JObject dict)
+    static private void PrepareSerialize(IEnumerable<JProperty> dict)
     {
-        foreach (KeyValuePair<string, JToken> item in dict)
+        foreach (JProperty item in dict)
         {
             switch(item.Value.Type)
             {
                 case JTokenType.Bytes:
                     {
-                        dict[item.Key] = new JObject();
-                        dict[item.Key]["RealType"] = "base64";
-                        dict[item.Key]["Value"] = Convert.ToBase64String((byte[])item.Value);
+                        item.Value = new JObject();
+                        item.Value["RealType"] = "base64";
+                        item.Value["Value"] = Convert.ToBase64String((byte[])item.Value);
                         break;
                     }
                 case JTokenType.Object:
                     {
-                        PrepareSerialize((JObject)item.Value);
+                        PrepareSerialize((item.Value as JObject).Properties());
                         break;
                     }
                 case JTokenType.Array:
@@ -146,7 +146,7 @@ static public class SaveHandler
                     }
                 case JTokenType.Object:
                     {
-                        PrepareSerialize((JObject)item);
+                        PrepareSerialize((item as JObject).Properties());
                         break;
                     }
                 case JTokenType.Array:
