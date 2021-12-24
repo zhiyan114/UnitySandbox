@@ -44,8 +44,4 @@ public class PlayerManager : MonoBehaviour
         UserData["Position"]["x"] = rb.position.x;
         UserData["Position"]["y"] = rb.position.y;
     }
-    private void OnApplicationQuit()
-    {
-        SaveManager.SaveToDisk();
-    }
 }
