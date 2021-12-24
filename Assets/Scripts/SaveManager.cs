@@ -1,26 +1,45 @@
 /*
- * FileName: SaveHandler.cs
+ * FileName: SaveManager.cs
  * Author: zhiyan114
- * Description: This file handles all the save data in the game. Should not be called in a quick manner (i.e. calling every frame).
- * ToDo: Better byte[] handling and automatic JObject to Dictionary Conversion
+ * Description: This file handles all the save data in the game.
+ * 
+ * Supported Object: Byte Array (automatic base64 conversion), int/double, String, Boolean, Array, and Dictionary.
+ * Warning: SaveManager.Data MUST BE JObject. Changing it to JArray will break the internal (which is automatic byte array converter)
  */
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 using Newtonsoft.Json.Linq;
 
 static public class SaveManager
 {
-    static private string FilePath;
+    static private string FilePath = "Default_Save.dat";
     static public string SavePath
     {
         set { FilePath = value; }
         get { return FilePath; }
     }
-    static private string AesKey = "FeelFreeToModifyTheSaveAndCheat!";
+    static private byte[] AesKey = new byte[16];
+    static public byte[] SetKey
+    {
+        set
+        {
+            switch(value.Length)
+            {
+                case 16:
+                    break;
+                case 24:
+                    break;
+                case 32:
+                    break;
+                default:
+                    throw new CryptographicException("AES Key size must be either 16, 24, 32 byte long.");
+            }
+            AesKey = value;
+        }
+    }
     static public JObject Data = new JObject();
 
     /*
@@ -39,7 +58,7 @@ static public class SaveManager
                     byte[] RandIV = new byte[16];
                     new System.Random().NextBytes(RandIV);
                     AesAlg.IV = RandIV;
-                    AesAlg.Key = Encoding.UTF8.GetBytes(AesKey);
+                    AesAlg.Key = AesKey;
                     AesAlg.Mode = CipherMode.CBC;
                     ICryptoTransform encryptor = AesAlg.CreateEncryptor();
                     SaveFile.Write(AesAlg.IV, 0, AesAlg.IV.Length);
@@ -75,7 +94,7 @@ static public class SaveManager
             {
                 using (FileStream SaveFile = new FileStream(FilePath, FileMode.Open))
                 {
-                    AesAlg.Key = Encoding.UTF8.GetBytes(AesKey);
+                    AesAlg.Key = AesKey;
                     byte[] IV = new byte[16];
                     SaveFile.Read(IV, 0, IV.Length);
                     AesAlg.IV = IV;
@@ -206,14 +225,31 @@ static public class SaveManager
             }
         }
     }
+    /*
+     * Description: Check if the save file exists
+     * Return: bool - if the file exist or not
+     */
     static public bool SaveFileExist()
     {
         return File.Exists(FilePath);
     }
-    static public bool DeleteSave()
+    /*
+     * Description: Delete the save file with the option to delete the loaded save as well
+     * Args: DeleteLoadedSave - Weather or not to delete the loaded JObject save.
+     * Return:
+     *  true - the files has been successfully 
+     *  false - The save file isn't existed when DeleteLoadedSave is false
+     */
+    static public bool DeleteSave(bool DeleteLoadedSave = false)
     {
+        bool status = false;
+        if (DeleteLoadedSave)
+        {
+            Data.RemoveAll();
+            status = true;
+        }
         if (!SaveFileExist())
-            return false;
+            return status;
         File.Delete(FilePath);
         return true;
     }
