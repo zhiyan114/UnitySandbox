@@ -1,7 +1,8 @@
 /*
- * FileName: SaveManager.cs
+ * FileName: OldSaveManager.cs
  * Author: zhiyan114
  * Description: This file handles all the save data in the game.
+ * ! Deprecated ! = New version uses AES-GCM via BouncyCastle instead of AES-CBC
  * 
  * Supported Object: Byte Array (automatic base64 conversion), int/double, String, Boolean, Array, and Dictionary.
  * Warning: SaveManager.Data MUST BE JObject. Changing it to JArray will break the internal (which is automatic byte array converter)
@@ -11,14 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Modes;
-using Org.BouncyCastle.Crypto.Parameters;
 
-static public class SaveManager
+static public class OldSaveManager
 {
     static private string FilePath = "Default_Save.dat";
     static public string SavePath
@@ -31,7 +27,7 @@ static public class SaveManager
     {
         set
         {
-            switch(value.Length)
+            switch (value.Length)
             {
                 case 16:
                     break;
@@ -55,19 +51,28 @@ static public class SaveManager
     {
         try
         {
-            File.Delete(FilePath);
-            using (FileStream SaveFile = new FileStream(FilePath, FileMode.Create))
+            using (Aes AesAlg = Aes.Create())
             {
-                byte[] RandIV = new byte[12];
-                new System.Random().NextBytes(RandIV);
-                SaveFile.Write(RandIV, 0, RandIV.Length);
-                BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
-                buffblockcipher.Init(true, new AeadParameters(new KeyParameter(AesKey), 128, RandIV));
-                JObject OrganizedSave = (JObject)Data.DeepClone();
-                PrepareSerialize(OrganizedSave, "");
-                byte[] RawDataByte = Encoding.UTF8.GetBytes(OrganizedSave.ToString());
-                byte[] SecureSaveData = buffblockcipher.DoFinal(RawDataByte);
-                SaveFile.Write(SecureSaveData, 0, SecureSaveData.Length);
+                File.Delete(FilePath);
+                using (FileStream SaveFile = new FileStream(FilePath, FileMode.Create))
+                {
+                    byte[] RandIV = new byte[16];
+                    new System.Random().NextBytes(RandIV);
+                    AesAlg.IV = RandIV;
+                    AesAlg.Key = AesKey;
+                    AesAlg.Mode = CipherMode.CBC;
+                    ICryptoTransform encryptor = AesAlg.CreateEncryptor();
+                    SaveFile.Write(AesAlg.IV, 0, AesAlg.IV.Length);
+                    using (CryptoStream EncryptStream = new CryptoStream(SaveFile, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (StreamWriter PlainTextSave = new StreamWriter(EncryptStream))
+                        {
+                            JObject OrganizedSave = (JObject)Data.DeepClone();
+                            PrepareSerialize(OrganizedSave, "");
+                            PlainTextSave.Write(OrganizedSave.ToString());
+                        }
+                    }
+                }
             }
         }
         catch (Exception)
@@ -90,21 +95,30 @@ static public class SaveManager
             {
                 using (FileStream SaveFile = new FileStream(FilePath, FileMode.Open))
                 {
-                    byte[] IV = new byte[12];
+                    AesAlg.Key = AesKey;
+                    byte[] IV = new byte[16];
                     SaveFile.Read(IV, 0, IV.Length);
-                    BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
-                    buffblockcipher.Init(false, new AeadParameters(new KeyParameter(AesKey), 128, IV));
-                    byte[] SecureSaveData = new byte[new FileInfo(FilePath).Length - 12];
-                    SaveFile.Read(SecureSaveData, 0, SecureSaveData.Length);
-                    byte[] RawSaveData = buffblockcipher.DoFinal(SecureSaveData);
-                    Data = JObject.Parse(Encoding.UTF8.GetString(RawSaveData, 0, RawSaveData.Length));
-                    PrepareDeserialize(Data, "");
+                    AesAlg.IV = IV;
+                    AesAlg.Mode = CipherMode.CBC;
+                    ICryptoTransform decryptor = AesAlg.CreateDecryptor();
+                    using (CryptoStream DecryptStream = new CryptoStream(SaveFile, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (StreamReader PlainTextLoad = new StreamReader(DecryptStream))
+                        {
+                            string JsonString = "";
+                            while (!PlainTextLoad.EndOfStream)
+                            {
+                                JsonString += PlainTextLoad.ReadLine();
+                            }
+                            Data = JObject.Parse(JsonString);
+                            PrepareDeserialize(Data, "");
+                        }
+                    }
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine("LOAD ERR: " + ex.Message);
             return false;
         }
         return true;
@@ -112,11 +126,11 @@ static public class SaveManager
     /*
      * Description: Prepare the object for disk saving
      */
-    static private void PrepareSerialize(JObject dict,string QueryVal="")
+    static private void PrepareSerialize(JObject dict, string QueryVal = "")
     {
-        foreach (KeyValuePair<string, JToken> item in (QueryVal != "") ? (JObject)dict.SelectToken(QueryVal.Substring(0,QueryVal.Length-1)) : dict)
+        foreach (KeyValuePair<string, JToken> item in (QueryVal != "") ? (JObject)dict.SelectToken(QueryVal.Substring(0, QueryVal.Length - 1)) : dict)
         {
-            switch(item.Value.Type)
+            switch (item.Value.Type)
             {
                 case JTokenType.Bytes:
                     {
@@ -125,22 +139,22 @@ static public class SaveManager
                     }
                 case JTokenType.Object:
                     {
-                        PrepareSerialize(dict, QueryVal+item.Key+".");
+                        PrepareSerialize(dict, QueryVal + item.Key + ".");
                         break;
                     }
                 case JTokenType.Array:
                     {
-                        PrepareSerialize(dict, QueryVal + item.Key,true);
+                        PrepareSerialize(dict, QueryVal + item.Key, true);
                         break;
                     }
             }
         }
     }
-    static private void PrepareSerialize(JObject dict, string QueryVal = "", bool isArray=true)
+    static private void PrepareSerialize(JObject dict, string QueryVal = "", bool isArray = true)
     {
-        for (int i=0; i<(dict.SelectToken(QueryVal) as JArray).Count; i++)
+        for (int i = 0; i < (dict.SelectToken(QueryVal) as JArray).Count; i++)
         {
-            JToken item = dict.SelectToken(QueryVal + "["+i+"]");
+            JToken item = dict.SelectToken(QueryVal + "[" + i + "]");
             switch (item.Type)
             {
                 case JTokenType.Bytes:
@@ -169,7 +183,7 @@ static public class SaveManager
     {
         foreach (KeyValuePair<string, JToken> item in (QueryVal != "") ? (JObject)dict.SelectToken(QueryVal.Substring(0, QueryVal.Length - 1)) : dict)
         {
-            if(item.Value.Type == JTokenType.String && item.Value.ToString().StartsWith("base64:"))
+            if (item.Value.Type == JTokenType.String && item.Value.ToString().StartsWith("base64:"))
             {
                 dict.SelectToken(QueryVal + item.Key).Replace(Convert.FromBase64String(item.Value.ToString().Substring(7)));
             }
@@ -177,7 +191,7 @@ static public class SaveManager
             {
                 case JTokenType.Object:
                     {
-                        PrepareDeserialize(dict, QueryVal+item.Key + ".");
+                        PrepareDeserialize(dict, QueryVal + item.Key + ".");
                         break;
                     }
                 case JTokenType.Array:
