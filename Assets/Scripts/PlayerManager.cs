@@ -25,7 +25,10 @@ public class PlayerManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+        if ((Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.S)) || (Input.GetKey(KeyCode.UpArrow) && Input.GetKey(KeyCode.DownArrow)))
+        {
+            rb.velocity = new Vector2(rb.velocity.x, 0);
+        } else if(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
         {
             // Jump Key
             rb.velocity = new Vector2(rb.velocity.x,JumpHeight);
@@ -33,7 +36,10 @@ public class PlayerManager : MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, -JumpHeight);
         }
-        if(Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        if ((Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D)) || (Input.GetKey(KeyCode.LeftArrow) && Input.GetKey(KeyCode.RightArrow)))
+        {
+            rb.velocity = new Vector2(0, rb.velocity.y);
+        } else if(Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
             // Right Side Key
             rb.velocity = new Vector2(WalkSpeed,rb.velocity.y);
