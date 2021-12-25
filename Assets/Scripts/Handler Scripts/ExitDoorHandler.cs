@@ -8,12 +8,10 @@ public class ExitDoorHandler : MonoBehaviour
     public GameObject PlayerCamera;
     public Rigidbody2D PlayerPhysic;
     public GameObject DefaultCamera;
-    private Collider2D ExitDoorCollide;
     private JObject UserData = (JObject)SaveManager.Data.GetValue("PlayerData");
 
     void Start()
     {
-        ExitDoorCollide = GetComponent<Collider2D>();
         if (UserData.TryGetValue("isOutdoor", out JToken isOutdoor_Token))
         {
             bool isOutdoor = isOutdoor_Token.ToObject<bool>();
@@ -24,11 +22,7 @@ public class ExitDoorHandler : MonoBehaviour
             }
         }
     }
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        ExitDoorCollide.enabled = false;
-    }
-    private void OnTriggerExit2D(Collider2D collision)
+    private void AutoSetCam()
     {
         if (PlayerPhysic.velocity.x > 0)
         {
@@ -44,6 +38,17 @@ public class ExitDoorHandler : MonoBehaviour
             PlayerCamera.SetActive(false);
             UserData["isOutdoor"] = false;
         }
-        ExitDoorCollide.enabled = true;
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        AutoSetCam();
+    }
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        AutoSetCam();
+    }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        AutoSetCam();
     }
 }
