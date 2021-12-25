@@ -13,9 +13,9 @@ public class MenuHandler : MonoBehaviour
         SaveManager.SavePath = Application.persistentDataPath + @"/UnitySandboxSave.dat";
         SaveManager.SetKey = Encoding.UTF8.GetBytes("FeelFreeToModifyTheSaveAndCheat!");
         if(SaveManager.SaveFileExist())
-        {
-            DelSavebtn.SetActive(true);
-        }
+            if(SaveManager.LoadFromDisk())
+                DelSavebtn.SetActive(true);
+        
     }
     public void DelSavebtn_Handler()
     {
@@ -24,10 +24,6 @@ public class MenuHandler : MonoBehaviour
     }
     public void StartBtn_Handler()
     {
-        if(SaveManager.SaveFileExist())
-        {
-            SaveManager.LoadFromDisk();
-        }
         // Load the default settings
         if(!SaveManager.Data.TryGetValue("PlayerData",out JToken _))
         {
