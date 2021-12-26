@@ -17,11 +17,6 @@ public class MenuHandler : MonoBehaviour
                 DelSavebtn.SetActive(true);
         
     }
-    public void DelSavebtn_Handler()
-    {
-        DelSavebtn.SetActive(false);
-        SaveManager.DeleteSave(true);
-    }
     public void StartBtn_Handler()
     {
         SceneManager.LoadScene("MainGame", LoadSceneMode.Single);
