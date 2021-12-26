@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Newtonsoft.Json.Linq;
 
 public class LobbyPlayerManager : MonoBehaviour
@@ -9,6 +10,7 @@ public class LobbyPlayerManager : MonoBehaviour
     public float WalkSpeed;
     public float JumpHeight;
     private SaveData UserData = SaveManager.Data;
+    public GameObject PauseMenu;
     // Start is called before the first frame update
     void Start()
     {
@@ -25,6 +27,14 @@ public class LobbyPlayerManager : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftBracket)) Economy.Manager.SetBalance(-1);
         if (Input.GetKey(KeyCode.RightBracket)) Economy.Manager.SetBalance(1);
         // End developer func
+        // Quick Menu Controls and UI
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Time.timeScale = !PauseMenu.activeSelf ? 0 : 1;
+            PauseMenu.SetActive(!PauseMenu.activeSelf);
+        }
+        if (PauseMenu.activeSelf) return;
+        // General User Movement Control
         if ((Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.S)) || (Input.GetKey(KeyCode.UpArrow) && Input.GetKey(KeyCode.DownArrow)))
         {
             rb.velocity = new Vector2(rb.velocity.x, 0);
@@ -49,5 +59,17 @@ public class LobbyPlayerManager : MonoBehaviour
         }
         UserData.Position["x"] = rb.position.x;
         UserData.Position["y"] = rb.position.y;
+    }
+    public void UnpauseGame()
+    {
+        PauseMenu.SetActive(false);
+        Time.timeScale = 1;
+    }
+    public void ReturnToMainMenu()
+    {
+        PauseMenu.SetActive(false);
+        SaveManager.SaveToDisk();
+        Time.timeScale = 1;
+        SceneManager.LoadScene("Menu", LoadSceneMode.Single);
     }
 }
