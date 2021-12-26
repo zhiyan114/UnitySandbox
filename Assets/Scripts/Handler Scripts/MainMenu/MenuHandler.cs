@@ -26,7 +26,6 @@ public class MenuHandler : MonoBehaviour
     {
         // Load the default settings
         SaveManager.SetDefaultValue("PlayerData", new JObject());
-        SaveManager.SetDefaultValue("Balance", 0, "PlayerData");
         SceneManager.LoadScene("MainGame", LoadSceneMode.Single);
     }
 }

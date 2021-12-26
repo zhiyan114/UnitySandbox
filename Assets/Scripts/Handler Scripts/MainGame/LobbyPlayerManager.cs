@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json.Linq;
 
-public class PlayerManager : MonoBehaviour
+public class LobbyPlayerManager : MonoBehaviour
 {
     private Rigidbody2D rb;
     public float WalkSpeed;
