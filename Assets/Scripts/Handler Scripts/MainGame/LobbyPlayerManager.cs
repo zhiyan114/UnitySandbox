@@ -8,19 +8,23 @@ public class LobbyPlayerManager : MonoBehaviour
     private Rigidbody2D rb;
     public float WalkSpeed;
     public float JumpHeight;
-    private JObject UserData = (JObject)SaveManager.Data.GetValue("PlayerData");
+    private SaveData UserData = SaveManager.Data;
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        if(!SaveManager.SetDefaultValue("Position", new JObject(), "PlayerData"))
-            rb.position = new Vector3((int)UserData["Position"]["x"], (int)UserData["Position"]["y"]);
+        if(UserData.Position.TryGetValue("x",out float xPos) && UserData.Position.TryGetValue("y", out float yPos))
+            rb.position = new Vector3(xPos, yPos);
 
     }
 
     // Update is called once per frame
     void Update()
     {
+        // Developer func
+        if (Input.GetKey(KeyCode.LeftBracket)) UserData.Balance -= 1;
+        if (Input.GetKey(KeyCode.RightBracket)) UserData.Balance += 1;
+        // End developer func
         if ((Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.S)) || (Input.GetKey(KeyCode.UpArrow) && Input.GetKey(KeyCode.DownArrow)))
         {
             rb.velocity = new Vector2(rb.velocity.x, 0);
@@ -43,7 +47,7 @@ public class LobbyPlayerManager : MonoBehaviour
             // Left side Key
             rb.velocity = new Vector2(-WalkSpeed, rb.velocity.y);
         }
-        UserData["Position"]["x"] = rb.position.x;
-        UserData["Position"]["y"] = rb.position.y;
+        UserData.Position["x"] = rb.position.x;
+        UserData.Position["y"] = rb.position.y;
     }
 }

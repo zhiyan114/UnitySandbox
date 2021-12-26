@@ -24,8 +24,6 @@ public class MenuHandler : MonoBehaviour
     }
     public void StartBtn_Handler()
     {
-        // Load the default settings
-        SaveManager.SetDefaultValue("PlayerData", new JObject());
         SceneManager.LoadScene("MainGame", LoadSceneMode.Single);
     }
 }

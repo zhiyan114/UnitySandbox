@@ -8,18 +8,14 @@ public class ExitDoorHandler : MonoBehaviour
     public GameObject PlayerCamera;
     public Rigidbody2D PlayerPhysic;
     public GameObject DefaultCamera;
-    private JObject UserData = (JObject)SaveManager.Data.GetValue("PlayerData");
+    private SaveData UserData = SaveManager.Data;
 
     void Start()
     {
-        if (UserData.TryGetValue("isOutdoor", out JToken isOutdoor_Token))
+        if (UserData.isOutdoor)
         {
-            bool isOutdoor = isOutdoor_Token.ToObject<bool>();
-            if (isOutdoor)
-            {
-                PlayerCamera.SetActive(true);
-                DefaultCamera.SetActive(false);
-            }
+            PlayerCamera.SetActive(true);
+            DefaultCamera.SetActive(false);
         }
     }
     private void AutoSetCam()
@@ -29,14 +25,14 @@ public class ExitDoorHandler : MonoBehaviour
             // Player Exits the base
             DefaultCamera.SetActive(false);
             PlayerCamera.SetActive(true);
-            UserData["isOutdoor"] = true;
+            UserData.isOutdoor = true;
         }
         else if (PlayerPhysic.velocity.x < 0)
         {
             // Player Enters the base
             DefaultCamera.SetActive(true);
             PlayerCamera.SetActive(false);
-            UserData["isOutdoor"] = false;
+            UserData.isOutdoor = false;
         }
     }
     private void OnTriggerEnter2D(Collider2D collision)

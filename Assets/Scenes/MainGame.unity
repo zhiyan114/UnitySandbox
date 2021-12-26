@@ -2265,7 +2265,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   WalkSpeed: 5
   JumpHeight: 5
-  CoinMgr: {fileID: 1153560902}
 --- !u!1 &1552164883
 GameObject:
   m_ObjectHideFlags: 0
