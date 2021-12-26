@@ -11,17 +11,20 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
-using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.IO;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
-
+using ProtoBuf;
+[ProtoContract]
 public class SaveData
 {
+    [ProtoMember(1)]
     public Dictionary<string,float> Position = new Dictionary<string,float>();
+    [ProtoMember(2)]
     public bool isOutdoor = false;
+    [ProtoMember(3)]
     public int Balance = 0;
 }
 static public class SaveManager
@@ -69,9 +72,8 @@ static public class SaveManager
                 SaveFile.Write(RandIV, 0, RandIV.Length);
                 BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
                 buffblockcipher.Init(true, new AeadParameters(new KeyParameter(AesKey), 128, RandIV));
-                byte[] RawDataByte = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Data));
-                byte[] SecureSaveData = buffblockcipher.DoFinal(RawDataByte);
-                SaveFile.Write(SecureSaveData, 0, SecureSaveData.Length);
+                using (CipherStream cryptstream = new CipherStream(SaveFile, null, buffblockcipher))
+                    Serializer.Serialize(cryptstream, Data);
             }
         }
         catch (Exception)
@@ -98,12 +100,15 @@ static public class SaveManager
                     SaveFile.Read(IV, 0, IV.Length);
                     BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
                     buffblockcipher.Init(false, new AeadParameters(new KeyParameter(AesKey), 128, IV));
-                    byte[] SecureSaveData = new byte[new FileInfo(FilePath).Length - 12];
-                    SaveFile.Read(SecureSaveData, 0, SecureSaveData.Length);
-                    byte[] RawSaveData = buffblockcipher.DoFinal(SecureSaveData);
-                    Data = JsonConvert.DeserializeObject<SaveData>(Encoding.UTF8.GetString(RawSaveData));
+                    using (CipherStream cryptstream = new CipherStream(SaveFile, buffblockcipher,null))
+                        Data = Serializer.Deserialize<SaveData>(cryptstream);
                 }
             }
+        }
+        catch(InvalidCipherTextException)
+        {
+            //DeleteSave(true);
+            return false;
         }
         catch (Exception)
         {

@@ -22,8 +22,8 @@ public class LobbyPlayerManager : MonoBehaviour
     void Update()
     {
         // Developer func
-        if (Input.GetKey(KeyCode.LeftBracket)) UserData.Balance -= 1;
-        if (Input.GetKey(KeyCode.RightBracket)) UserData.Balance += 1;
+        if (Input.GetKey(KeyCode.LeftBracket)) Economy.Manager.SetBalance(-1);
+        if (Input.GetKey(KeyCode.RightBracket)) Economy.Manager.SetBalance(1);
         // End developer func
         if ((Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.S)) || (Input.GetKey(KeyCode.UpArrow) && Input.GetKey(KeyCode.DownArrow)))
         {
