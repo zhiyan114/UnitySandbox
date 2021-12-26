@@ -13,13 +13,9 @@ public class PlayerManager : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        if (UserData.TryGetValue("Position", out JToken UserPos))
-        {
-            Dictionary<string, int> PlrPosition = (UserPos as JObject).ToObject<Dictionary<string, int>>();
-            rb.position = new Vector2(PlrPosition["x"], PlrPosition["y"]);
-        }
-        else
-            UserData.Add("Position", new JObject());
+        if(!SaveManager.SetDefaultValue("Position", new JObject(), "PlayerData"))
+            rb.position = new Vector3((int)UserData["Position"]["x"], (int)UserData["Position"]["y"]);
+
     }
 
     // Update is called once per frame

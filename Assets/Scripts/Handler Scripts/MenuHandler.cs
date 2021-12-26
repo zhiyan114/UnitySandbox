@@ -12,8 +12,8 @@ public class MenuHandler : MonoBehaviour
     {
         SaveManager.SavePath = Application.persistentDataPath + @"/UnitySandboxSave.dat";
         SaveManager.SetKey = Encoding.UTF8.GetBytes("FeelFreeToModifyTheSaveAndCheat!");
-        if(SaveManager.SaveFileExist())
-            if(SaveManager.LoadFromDisk())
+        if (SaveManager.SaveFileExist())
+            if (SaveManager.LoadFromDisk())
                 DelSavebtn.SetActive(true);
         
     }
@@ -25,10 +25,8 @@ public class MenuHandler : MonoBehaviour
     public void StartBtn_Handler()
     {
         // Load the default settings
-        if(!SaveManager.Data.TryGetValue("PlayerData",out JToken _))
-        {
-            SaveManager.Data.Add("PlayerData", new JObject());
-        }
+        SaveManager.SetDefaultValue("PlayerData", new JObject());
+        SaveManager.SetDefaultValue("Balance", 0, "PlayerData");
         SceneManager.LoadScene("MainGame", LoadSceneMode.Single);
     }
 }

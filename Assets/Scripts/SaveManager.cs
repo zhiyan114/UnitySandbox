@@ -48,6 +48,20 @@ static public class SaveManager
     static public JObject Data = new JObject();
 
     /*
+     * Description: This function automatically detects empty value and set a desired default values to it
+     * Returns: bool
+     *  true - The default value has been applied
+     *  false - The default value was not applied (maybe there is already a value for it)
+     */
+    static public bool SetDefaultValue(string key_name, JToken default_value, string SelectFromData = "")
+    {
+        JObject ModifyData = (JObject)Data.SelectToken(SelectFromData);
+        if (ModifyData.TryGetValue(key_name, out JToken _))
+            return false;
+        ModifyData.Add(key_name, default_value);
+        return true;
+    }
+    /*
      * Description: Save the data into into a save file
      * Return: bool - If save is successful or not
      */
@@ -111,6 +125,7 @@ static public class SaveManager
     }
     /*
      * Description: Prepare the object for disk saving
+     * 
      */
     static private void PrepareSerialize(JObject dict,string QueryVal="")
     {
