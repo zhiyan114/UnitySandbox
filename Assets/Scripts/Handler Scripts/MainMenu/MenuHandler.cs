@@ -31,7 +31,6 @@ public class MenuHandler : MonoBehaviour
                 Screen.SetResolution(852, 480, false);
                 break;
         }
-        Debug.Log((int)SaveManager.Data.ScreenResolution);
 
     }
     public void StartBtn_Handler()

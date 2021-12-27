@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json.Linq;
+using TMPro;
 
 public class LobbyPlayerManager : MonoBehaviour
 {
@@ -11,13 +12,20 @@ public class LobbyPlayerManager : MonoBehaviour
     public float JumpHeight;
     private SaveData UserData = SaveManager.Data;
     public GameObject PauseMenu;
+    public TextMeshProUGUI BalanceText;
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         if(UserData.Position.TryGetValue("x",out float xPos) && UserData.Position.TryGetValue("y", out float yPos))
             rb.position = new Vector3(xPos, yPos);
+        BalanceText.text = Economy.Manager.GetBalance.ToString();
+        Economy.Manager.BalanceChanged += Manager_BalanceChanged;
+    }
 
+    private void Manager_BalanceChanged(object sender, Economy.BalanceChangedEventArgs e)
+    {
+        BalanceText.text = e.newBalance.ToString();
     }
 
     // Update is called once per frame

@@ -23,7 +23,7 @@ public class SettingsHandler : MonoBehaviour
     public TMP_Dropdown ResolutionSelect;
     public void SettingsBtn_Handler()
     {
-        ResolutionSelect.value = (int)UserData.ScreenResolution;
+        //ResolutionSelect.value = (int)UserData.ScreenResolution;
         MainSection.SetActive(false);
         gameObject.SetActive(true);
 
@@ -35,7 +35,7 @@ public class SettingsHandler : MonoBehaviour
     }
     public void Savebtn()
     {
-
+        
         switch(ResolutionSelect.value)
         {
             case 0:

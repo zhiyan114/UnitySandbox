@@ -17,17 +17,19 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
 using ProtoBuf;
+using System.Reflection;
+
 [ProtoContract]
 public class SaveData
 {
     [ProtoMember(1)]
-    public Dictionary<string,float> Position = new Dictionary<string,float>();
+    public Dictionary<string,float> Position { get; set; } = new Dictionary<string,float>();
     [ProtoMember(2)]
-    public bool isOutdoor = false;
+    public bool isOutdoor { get; set; } = false;
     [ProtoMember(3)]
-    public int Balance = 0;
+    public int Balance { get; set; } = 0;
     [ProtoMember(4)]
-    public ResolutionType ScreenResolution = ResolutionType.FullScreen; // ResolutionType exist under SettingsHandler.cs
+    public ResolutionType ScreenResolution { get; set; } = ResolutionType.FullScreen; // ResolutionType exist under SettingsHandler.cs
 }
 static public class SaveManager
 {
@@ -75,7 +77,9 @@ static public class SaveManager
                 BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
                 buffblockcipher.Init(true, new AeadParameters(new KeyParameter(AesKey), 128, RandIV));
                 using (CipherStream cryptstream = new CipherStream(SaveFile, null, buffblockcipher))
+                {
                     Serializer.Serialize(cryptstream, Data);
+                }
             }
         }
         catch (Exception)
@@ -102,8 +106,12 @@ static public class SaveManager
                     SaveFile.Read(IV, 0, IV.Length);
                     BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
                     buffblockcipher.Init(false, new AeadParameters(new KeyParameter(AesKey), 128, IV));
-                    using (CipherStream cryptstream = new CipherStream(SaveFile, buffblockcipher,null))
-                        Data = Serializer.Deserialize<SaveData>(cryptstream);
+                    SaveData internalDat;
+                    using (CipherStream cryptstream = new CipherStream(SaveFile, buffblockcipher, null))
+                        internalDat = Serializer.Deserialize<SaveData>(cryptstream);
+                    foreach(PropertyInfo prop in internalDat.GetType().GetProperties()) {
+                        Data.GetType().GetProperty(prop.Name).SetValue(Data, prop.GetValue(internalDat, null));
+                    }
                 }
             }
         }
