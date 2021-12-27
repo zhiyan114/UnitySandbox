@@ -26,6 +26,8 @@ public class SaveData
     public bool isOutdoor = false;
     [ProtoMember(3)]
     public int Balance = 0;
+    [ProtoMember(4)]
+    public ResolutionType ScreenResolution = ResolutionType.FullScreen; // ResolutionType exist under SettingsHandler.cs
 }
 static public class SaveManager
 {
