@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class ShopHandler : MonoBehaviour
+public class SkinShopHandler : MonoBehaviour
 {
     public PlayerMessageManager MessageManager;
     private void OnTriggerEnter2D(Collider2D collision)
