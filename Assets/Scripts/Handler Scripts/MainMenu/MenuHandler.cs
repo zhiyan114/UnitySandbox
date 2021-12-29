@@ -14,7 +14,7 @@ public class MenuHandler : MonoBehaviour
         if (!Loaded)
         {
             Loaded = true;
-            SaveManager.SavePath = Application.persistentDataPath + @"/UnitySandboxSave.dat";
+            SaveManager.SavePath = Application.persistentDataPath + @"/UnitySandboxSave.bin";
             SaveManager.SetKey = Encoding.UTF8.GetBytes("FeelFreeToModifyTheSaveAndCheat!");
             if (SaveManager.SaveFileExist())
                 if (SaveManager.LoadFromDisk())
