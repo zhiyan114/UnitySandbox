@@ -18,10 +18,12 @@ using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
 using ProtoBuf;
 using System.Reflection;
+using UnityEngine;
 
 [ProtoContract]
 public class SaveData
 {
+    [ProtoMap(DisableMap = true)]
     [ProtoMember(1)]
     public Dictionary<string,float> Position { get; set; } = new Dictionary<string,float>();
     [ProtoMember(2)]
@@ -82,8 +84,9 @@ static public class SaveManager
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.LogException(ex);
             return false;
         }
         return true;
@@ -115,13 +118,15 @@ static public class SaveManager
                 }
             }
         }
-        catch(InvalidCipherTextException)
+        catch(InvalidCipherTextException ex)
         {
             //DeleteSave(true);
+            Debug.LogException(ex);
             return false;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.LogException(ex);
             return false;
         }
         return true;

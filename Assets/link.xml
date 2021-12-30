@@ -1,0 +1,8 @@
+<linker>
+  <assembly fullname="BouncyCastle.Crypto">
+    <type fullname="Org.BouncyCastle.Crypto.*" preserve="all"/>
+  </assembly>
+  <assembly fullname="protobuf-net">
+    <type fullname="ProtoBuf.*" preserve="all"/>
+  </assembly>
+</linker>

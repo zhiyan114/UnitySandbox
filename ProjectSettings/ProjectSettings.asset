@@ -573,7 +573,8 @@ PlayerSettings:
   platformArchitecture: {}
   scriptingBackend:
     Standalone: 0
-  il2cppCompilerConfiguration: {}
+  il2cppCompilerConfiguration:
+    Standalone: 1
   managedStrippingLevel:
     Standalone: 0
   incrementalIl2cppBuild: {}
