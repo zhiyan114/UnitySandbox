@@ -25,13 +25,17 @@ public class SaveData
 {
     [ProtoMap(DisableMap = true)]
     [ProtoMember(1)]
-    public Dictionary<string,float> Position { get; set; } = new Dictionary<string,float>();
+    public Dictionary<string, float> Position { get; set; } = new Dictionary<string, float>();
     [ProtoMember(2)]
     public bool isOutdoor { get; set; } = false;
     [ProtoMember(3)]
     public int Balance { get; set; } = 0;
     [ProtoMember(4)]
     public ResolutionType ScreenResolution { get; set; } = ResolutionType.FullScreen; // ResolutionType exist under SettingsHandler.cs
+    [ProtoMember(5)]
+    public ShopManager.Skins CurrentSkin = Economy.Manager.AvailableSkins[0];
+    [ProtoMember(6)]
+    public List<ShopManager.Skins> OwnedSkins = new List<ShopManager.Skins>() { Economy.Manager.AvailableSkins[0] };
 }
 static public class SaveManager
 {

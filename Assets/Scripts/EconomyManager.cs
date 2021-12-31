@@ -5,34 +5,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace ShopManager
-{
-    [ProtoContract]
-    public class Item
-    {
-        [ProtoMember(1)]
-        public string Name;
-        [ProtoMember(2)]
-        public string Description;
-        [ProtoMember(3)]
-        public int Price;
-        [ProtoMember(4)]
-        public int MaxQuantity;
-        [ProtoMember(5)]
-        public GameObject PlayerReceive;
 
-    }
-}
 namespace Economy
 {
+
     public static class Manager
     {
-        static SaveData UserData = SaveManager.Data;
-        static public Dictionary<string, ShopManager.Item> ShopItems = new Dictionary<string, ShopManager.Item>();
-
+        static public ShopManager.Skins[] AvailableSkins = new ShopManager.Skins[]
+        {
+            new ShopManager.Skins { Name = "Default", Price = 0 }
+        };
         public static int GetBalance
         {
-            get => UserData.Balance;
+            get => SaveManager.Data.Balance;
         }
         public static bool SetBalance(int newBalance)
         {
@@ -42,11 +27,11 @@ namespace Economy
 
             BalanceChangedEventArgs BalEventArg = new BalanceChangedEventArgs
             {
-                oldBalance = UserData.Balance,
+                oldBalance = SaveManager.Data.Balance,
                 newBalance = newBalance
             };
             if (BalanceChanged != null) BalanceChanged(null, BalEventArg);
-            UserData.Balance = newBalance;
+            SaveManager.Data.Balance = newBalance;
             return true;
         }
         static public event EventHandler<BalanceChangedEventArgs> BalanceChanged;
