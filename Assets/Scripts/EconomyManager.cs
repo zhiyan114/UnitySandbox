@@ -11,9 +11,9 @@ namespace Economy
 
     public static class Manager
     {
-        static public ShopManager.Skins[] AvailableSkins = new ShopManager.Skins[]
+        static public ShopManager.Skin[] AvailableSkins = new ShopManager.Skin[]
         {
-            new ShopManager.Skins { Name = "Default", Price = 0 }
+            new ShopManager.Skin { Name = "Default", Price = 0 }
         };
         public static int GetBalance
         {

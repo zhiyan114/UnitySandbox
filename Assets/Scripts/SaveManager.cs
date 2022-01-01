@@ -33,9 +33,9 @@ public class SaveData
     [ProtoMember(4)]
     public ResolutionType ScreenResolution { get; set; } = ResolutionType.FullScreen; // ResolutionType exist under SettingsHandler.cs
     [ProtoMember(5)]
-    public ShopManager.Skins CurrentSkin = Economy.Manager.AvailableSkins[0];
+    public ShopManager.Skin CurrentSkin = Economy.Manager.AvailableSkins[0];
     [ProtoMember(6)]
-    public List<ShopManager.Skins> OwnedSkins = new List<ShopManager.Skins>() { Economy.Manager.AvailableSkins[0] };
+    public List<ShopManager.Skin> OwnedSkins = new List<ShopManager.Skin>() { Economy.Manager.AvailableSkins[0] };
 }
 static public class SaveManager
 {
@@ -83,9 +83,7 @@ static public class SaveManager
                 BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
                 buffblockcipher.Init(true, new AeadParameters(new KeyParameter(AesKey), 128, RandIV));
                 using (CipherStream cryptstream = new CipherStream(SaveFile, null, buffblockcipher))
-                {
                     Serializer.Serialize(cryptstream, Data);
-                }
             }
         }
         catch (Exception ex)
