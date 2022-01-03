@@ -10,11 +10,13 @@ public enum ResolutionType
     [ProtoEnum]
     FullScreen = 0,
     [ProtoEnum]
-    FullHD = 1,
+    Borderless = 1,
     [ProtoEnum]
-    HD = 2,
+    FullHD = 2,
     [ProtoEnum]
-    SD = 3,
+    HD = 3,
+    [ProtoEnum]
+    SD = 4,
 }
 public class SettingsHandler : MonoBehaviour
 {
@@ -39,18 +41,22 @@ public class SettingsHandler : MonoBehaviour
         switch(ResolutionSelect.value)
         {
             case 0:
-                Screen.SetResolution(Display.main.systemWidth, Display.main.systemHeight, true);
+                Screen.SetResolution(Display.main.systemWidth, Display.main.systemHeight, FullScreenMode.ExclusiveFullScreen);
                 UserData.ScreenResolution = ResolutionType.FullScreen;
                 break;
             case 1:
+                Screen.SetResolution(Display.main.systemWidth, Display.main.systemHeight, FullScreenMode.FullScreenWindow);
+                UserData.ScreenResolution = ResolutionType.Borderless;
+                break;
+            case 2:
                 Screen.SetResolution(1920, 1080, false);
                 UserData.ScreenResolution = ResolutionType.FullHD;
                 break;
-            case 2:
+            case 3:
                 Screen.SetResolution(1280, 720, false);
                 UserData.ScreenResolution = ResolutionType.HD;
                 break;
-            case 3:
+            case 4:
                 Screen.SetResolution(852, 480, false);
                 UserData.ScreenResolution = ResolutionType.SD;
                 break;

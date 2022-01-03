@@ -23,7 +23,10 @@ public class MenuHandler : MonoBehaviour
             switch (SaveManager.Data.ScreenResolution)
             {
                 case ResolutionType.FullScreen:
-                    Screen.SetResolution(Screen.width, Screen.height, true);
+                    Screen.SetResolution(Screen.width, Screen.height, FullScreenMode.ExclusiveFullScreen);
+                    break;
+                case ResolutionType.Borderless:
+                    Screen.SetResolution(Screen.width, Screen.height, FullScreenMode.FullScreenWindow);
                     break;
                 case ResolutionType.FullHD:
                     Screen.SetResolution(1920, 1080, false);
