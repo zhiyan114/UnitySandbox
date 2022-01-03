@@ -4,19 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-
-namespace ShopManager
-{
-    [ProtoContract]
-    public class Skin
-    {
-        [ProtoMember(1)]
-        public string Name { get; set; }
-        [ProtoMember(2)]
-        public int Price { get; set; }
-
-    }
-}
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 
 public class SkinShopHandler : MonoBehaviour
@@ -29,43 +18,69 @@ public class SkinShopHandler : MonoBehaviour
     public Transform ShopTemplate;
     public Transform shopDetailDisplay;
     private bool isTouchingShop = false;
-    private ShopManager.Skin SelectedShopSkin;
+    private string SelectedShopSkin;
     private void Start()
     {
-        PlayerSkin.sprite = Resources.Load<Sprite>("Skins/" + SaveManager.Data.CurrentSkin.Name);
-        foreach (ShopManager.Skin skin in Economy.Manager.AvailableSkins)
+        PlayerSkin.sprite = Resources.Load<Sprite>("Skins/" + SaveManager.Data.CurrentSkin);
+        RectTransform LastClone = null;
+        foreach (KeyValuePair<string,int> skin in Economy.Manager.AvailableSkins)
         {
             // Need to work on auto scaling and positioning once more skins are added to automate this.
             Transform Template = Instantiate(ShopTemplate,ShopDisplay);
-            Template.name = skin.Name+"_Skin";
-            Template.Find("Title").GetComponent<TextMeshProUGUI>().text = skin.Name;
-            Template.Find("Image").GetComponent<Image>().sprite = Resources.Load<Sprite>("Skins/" + skin.Name);
-            Template.Find("Price").GetComponent<TextMeshProUGUI>().text = skin.Price.ToString();
-            Template.GetComponent<Button>().onClick.AddListener(delegate { ShopDetailDisplay_Handler(skin);  });
+            Template.name = skin.Key+"_Skin";
+            Template.Find("Title").GetComponent<TextMeshProUGUI>().text = skin.Key;
+            Template.Find("Image").GetComponent<Image>().sprite = Resources.Load<Sprite>("Skins/" + skin.Key);
+            Template.Find("Price").GetComponent<TextMeshProUGUI>().text = skin.Value.ToString();
+            Template.GetComponent<Button>().onClick.AddListener(delegate { ShopDetailDisplay_Handler(skin.Key);  });
+            RectTransform Template_Rect = Template.GetComponent<RectTransform>();
+            if (!(LastClone is null))
+            {
+                RectTransform Default_Rect = ShopTemplate.GetComponent<RectTransform>();
+                float xdiff = Mathf.Abs(Default_Rect.anchorMax.x - Default_Rect.anchorMin.x);
+                float ydiff = Mathf.Abs(Default_Rect.anchorMax.y - Default_Rect.anchorMin.y);
+                if (LastClone.anchorMax.x < 0.9)
+                {
+                    Template_Rect.anchorMin = new Vector2((float)(LastClone.anchorMax.x + 0.02), LastClone.anchorMin.y);
+                    Template_Rect.anchorMax = new Vector2((float)((LastClone.anchorMax.x*2)+0.02), LastClone.anchorMax.y);
+                }
+                else
+                {
+                    // Needs to change Y position to fill in
+                    
+                    Template_Rect.anchorMin = new Vector2(Default_Rect.anchorMin.x, (float)((Default_Rect.anchorMin.y/2) - 0.02));
+                    Template_Rect.anchorMax = new Vector2(Default_Rect.anchorMax.x, (float)(Default_Rect.anchorMin.y - ydiff - 0.02));
+                }
+                //Template_Rect.anchorMin = new Vector2((float)((LastClone.anchorMin.x * 2)+0.02), (float)(LastClone.anchorMin.x > 0.95 ? (LastClone.anchorMin.y*2)+0.02 : LastClone.anchorMin.y));
+            }
+            LastClone = Template.GetComponent<RectTransform>();
+
             Template.gameObject.SetActive(true);
         }
         // Select current skin by default
         ShopDetailDisplay_Handler(SaveManager.Data.CurrentSkin);
     }
-    private void ShopDetailDisplay_Handler(ShopManager.Skin skin)
+    private void ShopDetailDisplay_Handler(string skinName)
     {
-        shopDetailDisplay.Find("Title").GetComponent<TextMeshProUGUI>().text = skin.Name;
-        shopDetailDisplay.Find("Img").GetComponent<Image>().sprite = Resources.Load<Sprite>("Skins/" + skin.Name);
-        shopDetailDisplay.Find("Cost").GetComponent<TextMeshProUGUI>().text = skin.Price.ToString();
+        shopDetailDisplay.Find("Title").GetComponent<TextMeshProUGUI>().text = skinName;
+        shopDetailDisplay.Find("Img").GetComponent<Image>().sprite = Resources.Load<Sprite>("Skins/" + skinName);
+        shopDetailDisplay.Find("Cost").GetComponent<TextMeshProUGUI>().text = Economy.Manager.AvailableSkins[skinName].ToString();
         TextMeshProUGUI ActionBtnText = shopDetailDisplay.Find("ActionBtn").Find("ActionName").GetComponent<TextMeshProUGUI>();
-        SelectedShopSkin = skin;
-        if(SaveManager.Data.CurrentSkin == skin)
+        SelectedShopSkin = skinName;
+        Button ActionBtn = shopDetailDisplay.Find("ActionBtn").GetComponent<Button>();
+        if (SaveManager.Data.CurrentSkin == skinName)
         {
             // User already owned the skin and equipped
-            shopDetailDisplay.Find("ActionBtn").GetComponent<Button>().interactable = false;
+            ActionBtn.interactable = false;
             ActionBtnText.text = "Equipped";
-        } else if(SaveManager.Data.OwnedSkins.Contains(skin))
+        } else if(SaveManager.Data.OwnedSkins.Contains(skinName))
         {
             // User already owned the skin but didn't equip it
+            ActionBtn.interactable = true;
             ActionBtnText.text = "Equip";
         } else
         {
             // User neither owned the skin or equip it
+            ActionBtn.interactable = true;
             ActionBtnText.text = "Buy";
         }
     }
@@ -77,16 +92,17 @@ public class SkinShopHandler : MonoBehaviour
         if (!SaveManager.Data.OwnedSkins.Contains(SelectedShopSkin))
         {
             // Perform skin purchase
-            if (!Economy.Manager.SetBalance(-SelectedShopSkin.Price))
+            if (!Economy.Manager.SetBalance(-Economy.Manager.AvailableSkins[SelectedShopSkin]))
             {
                 // Not enough balance was detected
                 StartCoroutine(LowBalanceMsg());
                 return;
             };
+            SaveManager.Data.OwnedSkins.Add(SelectedShopSkin);
         }
         // Equip the skin if the user already owns it or after the purchase
         Transform ActionBtn = shopDetailDisplay.Find("ActionBtn");
-        PlayerSkin.sprite = Resources.Load<Sprite>("Skins/" + SelectedShopSkin.Name);
+        PlayerSkin.sprite = Resources.Load<Sprite>("Skins/" + SelectedShopSkin);
         SaveManager.Data.CurrentSkin = SelectedShopSkin;
         ActionBtn.GetComponent<Button>().interactable = false;
         ActionBtn.Find("ActionName").GetComponent<TextMeshProUGUI>().text = "Equipped";

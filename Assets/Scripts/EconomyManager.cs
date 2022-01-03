@@ -11,9 +11,10 @@ namespace Economy
 
     public static class Manager
     {
-        static public ShopManager.Skin[] AvailableSkins = new ShopManager.Skin[]
+        static public Dictionary<string,int> AvailableSkins = new Dictionary<string, int>()
         {
-            new ShopManager.Skin { Name = "Default", Price = 0 }
+            {"Default", 0},
+            {"Angry",100 },
         };
         public static int GetBalance
         {

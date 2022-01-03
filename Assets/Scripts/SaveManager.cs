@@ -19,8 +19,9 @@ using Org.BouncyCastle.Crypto.Parameters;
 using ProtoBuf;
 using System.Reflection;
 using UnityEngine;
+using Newtonsoft.Json;
 
-[ProtoContract]
+[ProtoContract()]
 public class SaveData
 {
     [ProtoMap(DisableMap = true)]
@@ -33,9 +34,9 @@ public class SaveData
     [ProtoMember(4)]
     public ResolutionType ScreenResolution { get; set; } = ResolutionType.FullScreen; // ResolutionType exist under SettingsHandler.cs
     [ProtoMember(5)]
-    public ShopManager.Skin CurrentSkin = Economy.Manager.AvailableSkins[0];
+    public string CurrentSkin { get; set; } = "Default";
     [ProtoMember(6)]
-    public List<ShopManager.Skin> OwnedSkins = new List<ShopManager.Skin>() { Economy.Manager.AvailableSkins[0] };
+    public List<string> OwnedSkins { get; set; } = new List<string>() { "Default" };
 }
 static public class SaveManager
 {
@@ -50,7 +51,7 @@ static public class SaveManager
     {
         set
         {
-            switch(value.Length)
+            switch (value.Length)
             {
                 case 16:
                     break;
@@ -83,6 +84,7 @@ static public class SaveManager
                 BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
                 buffblockcipher.Init(true, new AeadParameters(new KeyParameter(AesKey), 128, RandIV));
                 using (CipherStream cryptstream = new CipherStream(SaveFile, null, buffblockcipher))
+                    //JsonStreamSerializer(cryptstream, Data);
                     Serializer.Serialize(cryptstream, Data);
             }
         }
@@ -92,6 +94,13 @@ static public class SaveManager
             return false;
         }
         return true;
+    }
+    static private void JsonStreamSerializer(Stream stream, object data)
+    {
+        JsonSerializer serializer = new JsonSerializer();
+        using (StreamWriter sw = new StreamWriter(stream))
+        using (JsonTextWriter jsonWriter = new JsonTextWriter(sw))
+            new JsonSerializer().Serialize(jsonWriter, data);
     }
     /*
      * Description: Loads the save data from the disk and update SaveData dictionary accordingly. Probably should only be ran once per game session.
@@ -113,14 +122,16 @@ static public class SaveManager
                     buffblockcipher.Init(false, new AeadParameters(new KeyParameter(AesKey), 128, IV));
                     SaveData internalDat;
                     using (CipherStream cryptstream = new CipherStream(SaveFile, buffblockcipher, null))
+                        //internalDat = JsonStreamDeserializer(cryptstream);
                         internalDat = Serializer.Deserialize<SaveData>(cryptstream);
-                    foreach(PropertyInfo prop in internalDat.GetType().GetProperties()) {
+                    foreach (PropertyInfo prop in internalDat.GetType().GetProperties())
+                    {
                         Data.GetType().GetProperty(prop.Name).SetValue(Data, prop.GetValue(internalDat, null));
                     }
                 }
             }
         }
-        catch(InvalidCipherTextException ex)
+        catch (InvalidCipherTextException ex)
         {
             //DeleteSave(true);
             Debug.LogException(ex);
@@ -132,6 +143,13 @@ static public class SaveManager
             return false;
         }
         return true;
+    }
+    static private SaveData JsonStreamDeserializer(Stream stream)
+    {
+        JsonSerializer serializer = new JsonSerializer();
+        using (StreamReader sr = new StreamReader(stream))
+        using (JsonTextReader jsonReader = new JsonTextReader(sr))
+            return new JsonSerializer().Deserialize<SaveData>(jsonReader);
     }
     /*
      * Description: Check if the save file exists
