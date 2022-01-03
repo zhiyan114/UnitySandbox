@@ -15,6 +15,10 @@ namespace Economy
         {
             {"Default", 0},
             {"Angry",100 },
+            {"Ape Smile",128 },
+            {"Ape Pirate", 256 },
+            {"Ape Devil", 420 },
+            {"Ape Army", 690 },
         };
         public static int GetBalance
         {

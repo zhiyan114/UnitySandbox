@@ -38,17 +38,18 @@ public class SkinShopHandler : MonoBehaviour
                 RectTransform Default_Rect = ShopTemplate.GetComponent<RectTransform>();
                 float xdiff = Mathf.Abs(Default_Rect.anchorMax.x - Default_Rect.anchorMin.x);
                 float ydiff = Mathf.Abs(Default_Rect.anchorMax.y - Default_Rect.anchorMin.y);
-                if (LastClone.anchorMax.x < 0.9)
+                if (LastClone.anchorMax.x < 0.8)
                 {
                     Template_Rect.anchorMin = new Vector2((float)(LastClone.anchorMax.x + 0.02), LastClone.anchorMin.y);
-                    Template_Rect.anchorMax = new Vector2((float)((LastClone.anchorMax.x*2)+0.02), LastClone.anchorMax.y);
+                    float xValCalc = (float)(LastClone.anchorMax.x + xdiff + 0.02);
+                    Template_Rect.anchorMax = new Vector2((float)(xValCalc >= 1 ? 1 : xValCalc), LastClone.anchorMax.y);
                 }
                 else
                 {
                     // Needs to change Y position to fill in
                     
-                    Template_Rect.anchorMin = new Vector2(Default_Rect.anchorMin.x, (float)((Default_Rect.anchorMin.y/2) - 0.02));
-                    Template_Rect.anchorMax = new Vector2(Default_Rect.anchorMax.x, (float)(Default_Rect.anchorMin.y - ydiff - 0.02));
+                    Template_Rect.anchorMin = new Vector2(Default_Rect.anchorMin.x, (float)((Default_Rect.anchorMin.y - ydiff) - 0.02));
+                    Template_Rect.anchorMax = new Vector2(Default_Rect.anchorMax.x, (float)(Default_Rect.anchorMin.y - 0.02));
                 }
                 //Template_Rect.anchorMin = new Vector2((float)((LastClone.anchorMin.x * 2)+0.02), (float)(LastClone.anchorMin.x > 0.95 ? (LastClone.anchorMin.y*2)+0.02 : LastClone.anchorMin.y));
             }
@@ -109,9 +110,12 @@ public class SkinShopHandler : MonoBehaviour
     }
     private IEnumerator LowBalanceMsg()
     {
+        Button ActionBtn = shopDetailDisplay.Find("ActionBtn").GetComponent<Button>();
         TextMeshProUGUI ActionBtnText = shopDetailDisplay.Find("ActionBtn").Find("ActionName").GetComponent<TextMeshProUGUI>();
+        ActionBtn.interactable = false;
         ActionBtnText.text = "Not Enough Money";
         yield return new WaitForSeconds(3);
+        ActionBtn.interactable = true;
         ActionBtnText.text = "Buy";
     }
     private void OnTriggerEnter2D(Collider2D collision)
