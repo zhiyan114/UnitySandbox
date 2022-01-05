@@ -2,15 +2,11 @@
  * FileName: SaveManager.cs
  * Author: zhiyan114
  * Description: This file handles all the save data in the game.
- * 
- * Supported Object: Byte Array (automatic base64 conversion), int/double, String, Boolean, Array, and Dictionary.
- * Warning: SaveManager.Data MUST BE JObject. Changing it to JArray will break the internal (which is automatic byte array converter)
  */
 
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.IO;
 using Org.BouncyCastle.Crypto.Engines;
@@ -19,7 +15,6 @@ using Org.BouncyCastle.Crypto.Parameters;
 using ProtoBuf;
 using System.Reflection;
 using UnityEngine;
-using Newtonsoft.Json;
 
 [ProtoContract()]
 public class SaveData
@@ -60,7 +55,7 @@ static public class SaveManager
                 case 32:
                     break;
                 default:
-                    throw new CryptographicException("AES Key size must be either 16, 24, 32 byte long.");
+                    throw new CryptoException("AES Key size must be either 16, 24, 32 byte long.");
             }
             AesKey = value;
         }
@@ -84,7 +79,6 @@ static public class SaveManager
                 BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
                 buffblockcipher.Init(true, new AeadParameters(new KeyParameter(AesKey), 128, RandIV));
                 using (CipherStream cryptstream = new CipherStream(SaveFile, null, buffblockcipher))
-                    //JsonStreamSerializer(cryptstream, Data);
                     Serializer.Serialize(cryptstream, Data);
             }
         }
@@ -94,13 +88,6 @@ static public class SaveManager
             return false;
         }
         return true;
-    }
-    static private void JsonStreamSerializer(Stream stream, object data)
-    {
-        JsonSerializer serializer = new JsonSerializer();
-        using (StreamWriter sw = new StreamWriter(stream))
-        using (JsonTextWriter jsonWriter = new JsonTextWriter(sw))
-            new JsonSerializer().Serialize(jsonWriter, data);
     }
     /*
      * Description: Loads the save data from the disk and update SaveData dictionary accordingly. Probably should only be ran once per game session.
@@ -112,28 +99,22 @@ static public class SaveManager
     {
         try
         {
-            using (Aes AesAlg = Aes.Create())
+            using (FileStream SaveFile = new FileStream(FilePath, FileMode.Open))
             {
-                using (FileStream SaveFile = new FileStream(FilePath, FileMode.Open))
+                byte[] IV = new byte[12];
+                SaveFile.Read(IV, 0, IV.Length);
+                BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
+                buffblockcipher.Init(false, new AeadParameters(new KeyParameter(AesKey), 128, IV));
+                using (CipherStream cryptstream = new CipherStream(SaveFile, buffblockcipher, null))
                 {
-                    byte[] IV = new byte[12];
-                    SaveFile.Read(IV, 0, IV.Length);
-                    BufferedAeadBlockCipher buffblockcipher = new BufferedAeadBlockCipher(new GcmBlockCipher(new AesEngine()));
-                    buffblockcipher.Init(false, new AeadParameters(new KeyParameter(AesKey), 128, IV));
-                    SaveData internalDat;
-                    using (CipherStream cryptstream = new CipherStream(SaveFile, buffblockcipher, null))
-                        //internalDat = JsonStreamDeserializer(cryptstream);
-                        internalDat = Serializer.Deserialize<SaveData>(cryptstream);
+                    SaveData internalDat = Serializer.Deserialize<SaveData>(cryptstream);
                     foreach (PropertyInfo prop in internalDat.GetType().GetProperties())
-                    {
                         Data.GetType().GetProperty(prop.Name).SetValue(Data, prop.GetValue(internalDat, null));
-                    }
                 }
             }
         }
         catch (InvalidCipherTextException ex)
         {
-            //DeleteSave(true);
             Debug.LogException(ex);
             return false;
         }
@@ -143,13 +124,6 @@ static public class SaveManager
             return false;
         }
         return true;
-    }
-    static private SaveData JsonStreamDeserializer(Stream stream)
-    {
-        JsonSerializer serializer = new JsonSerializer();
-        using (StreamReader sr = new StreamReader(stream))
-        using (JsonTextReader jsonReader = new JsonTextReader(sr))
-            return new JsonSerializer().Deserialize<SaveData>(jsonReader);
     }
     /*
      * Description: Check if the save file exists
@@ -161,21 +135,17 @@ static public class SaveManager
     }
     /*
      * Description: Delete the save file with the option to delete the loaded save as well
-     * Args: DeleteLoadedSave - Weather or not to delete the loaded JObject save.
+     * Args: DeleteLoadedSave - Weather or not to reset the "Data" variable.
      * Return:
      *  true - the files has been successfully 
-     *  false - The save file isn't existed when DeleteLoadedSave is false
+     *  false - The save file doesn't exist. (even if the Data was reset to default)
      */
-    static public bool DeleteSave(bool DeleteLoadedSave = false)
+    static public bool DeleteSave(bool DeleteLoadedSave = true)
     {
-        bool status = false;
         if (DeleteLoadedSave)
-        {
             Data = new SaveData { };
-            status = true;
-        }
         if (!SaveFileExist())
-            return status;
+            return false;
         File.Delete(FilePath);
         return true;
     }
