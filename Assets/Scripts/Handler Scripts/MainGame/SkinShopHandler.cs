@@ -10,13 +10,19 @@ using UnityEngine.InputSystem;
 
 public class SkinShopHandler : MonoBehaviour
 {
-    public PlayerMessageManager MessageManager;
-    public GameObject ShopUI;
+    [SerializeField]
+    private PlayerMessageManager MessageManager;
+    [SerializeField]
+    private GameObject ShopUI;
     // Object for shop
-    public SpriteRenderer PlayerSkin;
-    public Transform ShopDisplay;
-    public Transform ShopTemplate;
-    public Transform shopDetailDisplay;
+    [SerializeField]
+    private SpriteRenderer PlayerSkin;
+    [SerializeField]
+    private Transform ShopDisplay;
+    [SerializeField]
+    private Transform ShopTemplate;
+    [SerializeField]
+    private Transform shopDetailDisplay;
     private bool isTouchingShop = false;
     private string SelectedShopSkin;
     PlayerInput PlrInput;

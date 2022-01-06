@@ -8,7 +8,8 @@ using UnityEngine.SceneManagement;
 
 public class MenuHandler : MonoBehaviour
 {
-    public GameObject DelSavebtn;
+    [SerializeField]
+    private GameObject DelSavebtn;
     private static bool Loaded = false;
     private void Start()
     {

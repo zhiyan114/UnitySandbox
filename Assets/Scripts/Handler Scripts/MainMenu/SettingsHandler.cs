@@ -21,8 +21,10 @@ public enum ResolutionType
 public class SettingsHandler : MonoBehaviour
 {
     private SaveData UserData = SaveManager.Data;
-    public GameObject MainSection;
-    public TMP_Dropdown ResolutionSelect;
+    [SerializeField]
+    private GameObject MainSection;
+    [SerializeField]
+    private TMP_Dropdown ResolutionSelect;
     public void SettingsBtn_Handler()
     {
         ResolutionSelect.value = (int)UserData.ScreenResolution;

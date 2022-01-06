@@ -5,9 +5,12 @@ using UnityEngine;
 
 public class ExitDoorHandler : MonoBehaviour
 {
-    public GameObject PlayerCamera;
-    public Rigidbody2D PlayerPhysic;
-    public GameObject DefaultCamera;
+    [SerializeField]
+    private GameObject PlayerCamera;
+    [SerializeField]
+    private Rigidbody2D PlayerPhysic;
+    [SerializeField]
+    private GameObject DefaultCamera;
     private SaveData UserData = SaveManager.Data;
 
     void Start()

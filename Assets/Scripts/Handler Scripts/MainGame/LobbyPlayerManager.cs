@@ -8,11 +8,15 @@ using UnityEngine.InputSystem;
 public class LobbyPlayerManager : MonoBehaviour
 {
     private Rigidbody2D rb;
-    public float WalkSpeed;
-    public float JumpHeight;
+    [SerializeField]
+    private float WalkSpeed;
+    [SerializeField]
+    private float JumpHeight;
     private SaveData UserData = SaveManager.Data;
-    public GameObject PauseMenu;
-    public TextMeshProUGUI BalanceText;
+    [SerializeField]
+    private GameObject PauseMenu;
+    [SerializeField]
+    private TextMeshProUGUI BalanceText;
     private PlayerInput PlrInput;
     // Start is called before the first frame update
     void Start()

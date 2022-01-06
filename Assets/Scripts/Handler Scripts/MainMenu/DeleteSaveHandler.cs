@@ -5,7 +5,8 @@ using UnityEngine.UI;
 
 public class DeleteSaveHandler : MonoBehaviour
 {
-    public Transform BtnCollection;
+    [SerializeField]
+    private Transform BtnCollection;
     public void DelSavebtn_Handler()
     {
         foreach (Transform btn in BtnCollection)

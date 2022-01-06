@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public class SaveHandler : MonoBehaviour
 {
     // Start is called before the first frame update
-    public GameObject SaveMsg;
+    [SerializeField]
+    private GameObject SaveMsg;
     private Button SaveBtn;
     void Start()
     {
