@@ -718,7 +718,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32.05
+  m_fontSize: 21.95
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1384,7 +1384,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 21.75
+  m_fontSize: 18
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3647,6 +3647,7 @@ GameObject:
   - component: {fileID: 1308981261}
   - component: {fileID: 1308981263}
   - component: {fileID: 1308981264}
+  - component: {fileID: 1308981265}
   m_Layer: 0
   m_Name: SkinShop
   m_TagString: Untagged
@@ -3765,6 +3766,72 @@ MonoBehaviour:
   ShopDisplay: {fileID: 701514194}
   ShopTemplate: {fileID: 824168864}
   shopDetailDisplay: {fileID: 125374203}
+--- !u!114 &1308981265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1308981260}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: 6ae84804fd7308641b56a340caae34d0, type: 3}
+  m_NotificationBehavior: 2
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: c13ba318-b1f8-4878-ab13-e1c0e0a27453
+    m_ActionName: Movement/MoveLeft[/Keyboard/a,/Keyboard/leftArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 5e77b56c-3251-4cfb-80a1-10b1abed1ea4
+    m_ActionName: Movement/MoveRight[/Keyboard/d,/Keyboard/rightArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: bbf50b25-56bd-46a4-8694-25ffb729cb70
+    m_ActionName: Movement/MoveUp[/Keyboard/w,/Keyboard/upArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: c909a5ad-5e84-47c9-a707-3ad5e5622544
+    m_ActionName: Movement/MoveDown[/Keyboard/s,/Keyboard/downArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: c614d81f-04f7-441f-a30b-f7973a39aed1
+    m_ActionName: Movement/PauseMenu[/Keyboard/escape]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1308981264}
+        m_TargetAssemblyTypeName: SkinShopHandler, Assembly-CSharp
+        m_MethodName: InteractShop
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 29a89aab-ccb4-4229-bf2c-c73f217125d3
+    m_ActionName: Interaction/Interact[/Keyboard/e]
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: Interaction
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
 --- !u!1 &1317107705
 GameObject:
   m_ObjectHideFlags: 0
@@ -4108,6 +4175,7 @@ GameObject:
   - component: {fileID: 1454429948}
   - component: {fileID: 1454429949}
   - component: {fileID: 1454429950}
+  - component: {fileID: 1454429951}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -4246,6 +4314,72 @@ MonoBehaviour:
   JumpHeight: 5
   PauseMenu: {fileID: 1837014311}
   BalanceText: {fileID: 428375396}
+--- !u!114 &1454429951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1454429945}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: 6ae84804fd7308641b56a340caae34d0, type: 3}
+  m_NotificationBehavior: 2
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: c13ba318-b1f8-4878-ab13-e1c0e0a27453
+    m_ActionName: Movement/MoveLeft[/Keyboard/a,/Keyboard/leftArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 5e77b56c-3251-4cfb-80a1-10b1abed1ea4
+    m_ActionName: Movement/MoveRight[/Keyboard/d,/Keyboard/rightArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: bbf50b25-56bd-46a4-8694-25ffb729cb70
+    m_ActionName: Movement/MoveUp[/Keyboard/w,/Keyboard/upArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: c909a5ad-5e84-47c9-a707-3ad5e5622544
+    m_ActionName: Movement/MoveDown[/Keyboard/s,/Keyboard/downArrow]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1454429950}
+        m_TargetAssemblyTypeName: LobbyPlayerManager, Assembly-CSharp
+        m_MethodName: PauseGame
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: c614d81f-04f7-441f-a30b-f7973a39aed1
+    m_ActionName: Movement/PauseMenu[/Keyboard/escape]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 29a89aab-ccb4-4229-bf2c-c73f217125d3
+    m_ActionName: Interaction/Interact[/Keyboard/e]
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: Movement
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
 --- !u!1 &1495573431
 GameObject:
   m_ObjectHideFlags: 0

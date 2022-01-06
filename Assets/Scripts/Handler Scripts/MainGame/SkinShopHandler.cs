@@ -6,7 +6,7 @@ using TMPro;
 using UnityEngine.UI;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
-
+using UnityEngine.InputSystem;
 
 public class SkinShopHandler : MonoBehaviour
 {
@@ -19,6 +19,11 @@ public class SkinShopHandler : MonoBehaviour
     public Transform shopDetailDisplay;
     private bool isTouchingShop = false;
     private string SelectedShopSkin;
+    PlayerInput PlrInput;
+    private void Awake()
+    {
+        PlrInput = GetComponent<PlayerInput>();
+    }
     private void Start()
     {
         PlayerSkin.sprite = Resources.Load<Sprite>("Skins/" + SaveManager.Data.CurrentSkin);
@@ -124,14 +129,16 @@ public class SkinShopHandler : MonoBehaviour
         MessageManager.isVisible = true;
         isTouchingShop = true;
     }
-    private void Update()
+    public void InteractShop(InputAction.CallbackContext cb)
     {
-        if(isTouchingShop)
-            if (Input.GetKeyDown(KeyCode.E))
+        if (isTouchingShop)
+        {
+            if (cb.phase == InputActionPhase.Started)
             {
                 ShopUI.SetActive(!ShopUI.activeSelf);
                 MessageManager.isVisible = !ShopUI.activeSelf;
             }
+        }
     }
     private void OnTriggerExit2D(Collider2D collision)
     {

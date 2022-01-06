@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Newtonsoft.Json.Linq;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class LobbyPlayerManager : MonoBehaviour
 {
@@ -13,11 +13,13 @@ public class LobbyPlayerManager : MonoBehaviour
     private SaveData UserData = SaveManager.Data;
     public GameObject PauseMenu;
     public TextMeshProUGUI BalanceText;
+    private PlayerInput PlrInput;
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        if(UserData.Position.TryGetValue("x",out float xPos) && UserData.Position.TryGetValue("y", out float yPos))
+        PlrInput = GetComponent<PlayerInput>();
+        if (UserData.Position.TryGetValue("x",out float xPos) && UserData.Position.TryGetValue("y", out float yPos))
             rb.position = new Vector3(xPos, yPos);
         BalanceText.text = Economy.Manager.GetBalance.ToString();
         Economy.Manager.BalanceChanged += Manager_BalanceChanged;
@@ -27,7 +29,7 @@ public class LobbyPlayerManager : MonoBehaviour
     {
         BalanceText.text = e.newBalance.ToString();
     }
-
+    
     // Update is called once per frame
     void Update()
     {
@@ -36,37 +38,41 @@ public class LobbyPlayerManager : MonoBehaviour
         if (Input.GetKey(KeyCode.RightBracket)) Economy.Manager.SetBalance(1);
         // End developer func
         // Quick Menu Controls and UI
-        if(Input.GetKeyDown(KeyCode.Escape))
-        {
-            Time.timeScale = !PauseMenu.activeSelf ? 0 : 1;
-            PauseMenu.SetActive(!PauseMenu.activeSelf);
-        }
         if (PauseMenu.activeSelf) return;
         // General User Movement Control
-        if ((Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.S)) || (Input.GetKey(KeyCode.UpArrow) && Input.GetKey(KeyCode.DownArrow)))
+        if (PlrInput.actions["MoveUp"].IsPressed() && PlrInput.actions["MoveDown"].IsPressed())
         {
             rb.velocity = new Vector2(rb.velocity.x, 0);
-        } else if(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+        } else if(PlrInput.actions["MoveUp"].IsPressed())
         {
             // Jump Key
             rb.velocity = new Vector2(rb.velocity.x,JumpHeight);
-        } else if((Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow)) && rb.velocity.y != 0)
+        } else if(PlrInput.actions["MoveDown"].IsPressed())
         {
             rb.velocity = new Vector2(rb.velocity.x, -JumpHeight);
         }
-        if ((Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D)) || (Input.GetKey(KeyCode.LeftArrow) && Input.GetKey(KeyCode.RightArrow)))
+        if (PlrInput.actions["MoveLeft"].IsPressed() && PlrInput.actions["MoveRight"].IsPressed())
         {
             rb.velocity = new Vector2(0, rb.velocity.y);
-        } else if(Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        } else if(PlrInput.actions["MoveRight"].IsPressed())
         {
             // Right Side Key
             rb.velocity = new Vector2(WalkSpeed,rb.velocity.y);
-        } else if(Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) {
+        } else if(PlrInput.actions["MoveLeft"].IsPressed()) {
             // Left side Key
             rb.velocity = new Vector2(-WalkSpeed, rb.velocity.y);
         }
         UserData.Position["x"] = rb.position.x;
         UserData.Position["y"] = rb.position.y;
+    }
+    // Ends Here
+    public void PauseGame(InputAction.CallbackContext cb)
+    {
+        if(cb.phase == InputActionPhase.Started)
+        {
+            Time.timeScale = !PauseMenu.activeSelf ? 0 : 1;
+            PauseMenu.SetActive(!PauseMenu.activeSelf);
+        }
     }
     public void UnpauseGame()
     {
